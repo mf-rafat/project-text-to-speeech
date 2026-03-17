@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Text Reader — Speak Any Text in 40+ Languages</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --font: 'Inter', system-ui, sans-serif;
+      --radius: 18px;
+      --transition: 0.35s cubic-bezier(.4,0,.2,1);
+    }
+
+    [data-theme="dark"] {
+      --bg-gradient-1: #0f0c29;
+      --bg-gradient-2: #302b63;
+      --bg-gradient-3: #24243e;
+      --card-bg: rgba(255, 255, 255, 0.06);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text-primary: #f0f0f0;
+      --text-secondary: #a0a0b8;
+      --accent: #7c5cfc;
+      --accent-hover: #6a48e6;
+      --danger: #ff4d6d;
+      --success: #00c896;
+      --warning: #f59e0b;
+      --input-bg: rgba(255, 255, 255, 0.05);
+      --input-border: rgba(255, 255, 255, 0.10);
+      --shadow: 0 8px 32px rgba(0,0,0,.45);
+      --bar-color: #7c5cfc;
+      --toggle-bg: rgba(255,255,255,0.1);
+      --badge-bg: rgba(124,92,252,0.15);
+      --option-bg: #1a1a2e;
+      --option-color: #f0f0f0;
+    }
+
+    [data-theme="light"] {
+      --bg-gradient-1: #e0eafc;
+      --bg-gradient-2: #cfdef3;
+      --bg-gradient-3: #f5f7fa;
+      --card-bg: rgba(255, 255, 255, 0.65);
+      --card-border: rgba(255, 255, 255, 0.85);
+      --text-primary: #1a1a2e;
+      --text-secondary: #555580;
+      --accent: #6c3ce0;
+      --accent-hover: #5a2cc4;
+      --danger: #e63356;
+      --success: #00a87a;
+      --warning: #d97706;
+      --input-bg: rgba(255, 255, 255, 0.7);
+      --input-border: rgba(0, 0, 0, 0.08);
+      --shadow: 0 8px 32px rgba(0,0,0,.10);
+      --bar-color: #6c3ce0;
+      --toggle-bg: rgba(0,0,0,0.06);
+      --badge-bg: rgba(108,60,224,0.1);
+      --option-bg: #fff;
+      --option-color: #1a1a2e;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: var(--font);
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3));
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background var(--transition), color var(--transition);
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    .header {
+      width: 100%;
+      max-width: 860px;
+      padding: 30px 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.5px;
+    }
+    .logo svg { width:32px; height:32px; }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .theme-toggle, .lang-badge {
+      background: var(--toggle-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: background var(--transition);
+      font-family: var(--font);
+    }
+    .theme-toggle:hover { background: var(--accent); color:#fff; }
+    .lang-badge {
+      background: var(--badge-bg);
+      cursor: default;
+      font-size: .75rem;
+    }
+
+    /* MAIN CARD */
+    .card {
+      width: 94%;
+      max-width: 860px;
+      margin: 18px auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      box-shadow: var(--shadow);
+      padding: 32px 28px 28px;
+      transition: background var(--transition), border var(--transition);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: .92rem;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .subtitle span { color: var(--accent); font-weight: 700; }
+
+    /* TEXTAREA */
+    #textInput {
+      width: 100%;
+      min-height: 180px;
+      padding: 18px;
+      font-family: var(--font);
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--text-primary);
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 14px;
+      resize: vertical;
+      outline: none;
+      transition: border var(--transition), background var(--transition);
+    }
+    #textInput::placeholder { color: var(--text-secondary); }
+    #textInput:focus { border-color: var(--accent); }
+
+    .info-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: .78rem;
+      color: var(--text-secondary);
+      padding: 0 4px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .info-stats { display: flex; gap: 14px; }
+    .detected-lang { font-weight: 600; color: var(--accent); }
+
+    .text-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .text-actions button {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-weight: 600;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .text-actions button:hover { background: var(--accent); color:#fff; border-color: var(--accent); }
+    .text-actions .btn-clear:hover { background: var(--danger); border-color: var(--danger); }
+    .text-actions .btn-sample:hover { background: var(--success); border-color: var(--success); }
+
+    /* CONTROLS */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .controls.three-col {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .control-group { display:flex; flex-direction:column; gap:5px; }
+    .control-group.full-width { grid-column: 1 / -1; }
+
+    .control-group label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .voice-warning {
+      font-size: .72rem;
+      color: var(--warning);
+      font-weight: 600;
+      margin-top: 2px;
+      min-height: 16px;
+    }
+
+    .control-group select,
+    .control-group input[type="range"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: .88rem;
+      outline: none;
+      cursor: pointer;
+      transition: border var(--transition);
+    }
+    .control-group select:focus { border-color: var(--accent); }
+
+    .control-group select option {
+      background: var(--option-bg);
+      color: var(--option-color);
+    }
+    .control-group select optgroup {
+      background: var(--option-bg);
+      color: var(--option-color);
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 40px;
+      background: transparent !important;
+      border: 1.5px solid var(--input-border) !important;
+      border-radius: 10px !important;
+      padding: 0 10px !important;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 5px; background: var(--card-border); border-radius: 4px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent); margin-top: -7px; cursor:pointer;
+      box-shadow: 0 0 6px rgba(124,92,252,.5);
+    }
+    input[type="range"]::-moz-range-track {
+      height: 5px; background: var(--card-border); border-radius: 4px; border:none;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent); cursor:pointer; border:none;
+      box-shadow: 0 0 6px rgba(124,92,252,.5);
+    }
+
+    .slider-value {
+      text-align: center;
+      font-weight: 700;
+      font-size: .82rem;
+      color: var(--accent);
+      margin-top: -2px;
+    }
+
+    /* LANGUAGE FILTER */
+    .lang-filter-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      align-items: center;
+    }
+    .lang-filter-row label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+    .lang-filter-row select {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: .82rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .lang-filter-row select option {
+      background: var(--option-bg);
+      color: var(--option-color);
+    }
+
+    /* VOICE COUNT */
+    .voice-count {
+      text-align: center;
+      font-size: .72rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* WAVEFORM */
+    .waveform {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      height: 50px;
+      margin: 22px 0 8px;
+      opacity: 0;
+      transition: opacity .4s;
+    }
+    .waveform.active { opacity: 1; }
+
+    .waveform .bar {
+      width: 4px;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bar-color);
+    }
+    .waveform.active .bar {
+      animation: wave 1s ease-in-out infinite;
+    }
+
+    @keyframes wave {
+      0%, 100% { height: 8px; opacity: .4; }
+      50%      { height: 36px; opacity: 1; }
+    }
+
+    /* PROGRESS BAR */
+    .progress-container {
+      width: 100%;
+      height: 4px;
+      background: var(--input-border);
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .progress-container.active { opacity: 1; }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s linear;
+    }
+
+    /* PLAYBACK BUTTONS */
+    .playback {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 13px 28px;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font);
+      font-weight: 700;
+      font-size: .92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition);
+      color: #fff;
+    }
+    .btn:active { transform: scale(.96); }
+
+    .btn-speak   { background: var(--accent); flex:1; justify-content:center; min-width:160px; }
+    .btn-speak:hover { background: var(--accent-hover); box-shadow: 0 4px 20px rgba(124,92,252,.45); }
+
+    .btn-pause   { background: #f59e0b; }
+    .btn-pause:hover { background: #d97706; }
+
+    .btn-stop    { background: var(--danger); }
+    .btn-stop:hover { background: #d6264a; }
+
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    .shortcut-hint {
+      text-align: center;
+      font-size: .72rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+    .shortcut-hint kbd {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: var(--font);
+      font-size: .7rem;
+    }
+
+    /* STATUS */
+    .status {
+      text-align: center;
+      font-size: .82rem;
+      color: var(--text-secondary);
+      margin-top: 14px;
+      min-height: 20px;
+      transition: color var(--transition);
+    }
+    .status.speaking { color: var(--success); font-weight:600; }
+    .status.error    { color: var(--danger); font-weight:600; }
+    .status.warning  { color: var(--warning); font-weight:600; }
+
+    /* DEBUG LOG */
+    .debug-log {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      font-size: .72rem;
+      color: #aaa;
+      max-height: 150px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      display: none;
+    }
+    .debug-log.visible { display: block; }
+
+    /* LANGUAGE SUPPORT TABLE */
+    .lang-support {
+      margin-top: 18px;
+      padding: 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 14px;
+    }
+    .lang-support h3 {
+      font-size: .85rem;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+    .lang-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .lang-chip {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 600;
+      border: 1px solid var(--input-border);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .lang-chip.available { background: rgba(0,200,150,0.1); border-color: var(--success); color: var(--success); }
+    .lang-chip.unavailable { background: rgba(255,77,109,0.08); border-color: var(--danger); color: var(--danger); opacity: 0.7; }
+    .lang-chip .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .lang-chip.available .dot { background: var(--success); }
+    .lang-chip.unavailable .dot { background: var(--danger); }
+
+    .toggle-lang-support {
+      margin-top: 12px;
+      background: none;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 16px;
+      color: var(--text-secondary);
+      font-family: var(--font);
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      width: 100%;
+    }
+    .toggle-lang-support:hover { border-color: var(--accent); color: var(--accent); }
+
+    .lang-support-wrapper {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s cubic-bezier(.4,0,.2,1);
+    }
+    .lang-support-wrapper.open {
+      max-height: 400px;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 28px 20px 22px;
+      font-size: .78rem;
+      color: var(--text-secondary);
+      max-width: 860px;
+    }
+    .footer a { color: var(--accent); text-decoration:none; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: .88rem;
+      font-weight: 600;
+      box-shadow: 0 6px 24px rgba(124,92,252,.45);
+      opacity: 0;
+      transition: all .4s cubic-bezier(.4,0,.2,1);
+      z-index: 999;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 700px) {
+      .card { padding: 22px 16px 20px; }
+      .controls { grid-template-columns: 1fr; }
+      .controls.three-col { grid-template-columns: 1fr; }
+      .playback { flex-direction: column; }
+      .btn { justify-content: center; }
+      .logo { font-size: 1.15rem; }
+      #textInput { min-height: 140px; font-size: .95rem; }
+      .header { padding: 20px 14px 10px; }
+      .header-actions { gap: 4px; }
+      .lang-badge { display: none; }
+      .info-bar { flex-direction: column; align-items: flex-start; }
+      .text-actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+        <path d="M19 11a7 7 0 0 1-14 0"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+      AI Text Reader
+    </div>
+    <div class="header-actions">
+      <span class="lang-badge" id="langBadge">🌍 40+ Languages</span>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CARD -->
+  <main class="card">
+    <p class="subtitle">
+      Paste or type text in <span>any language</span> — and let AI read it aloud.<br/>
+      Supports <span>40+ languages</span> including বাংলা, हिन्दी, العربية, 中文, 日本語 & more.
+    </p>
+
+    <textarea
+      id="textInput"
+      placeholder="Type or paste text here… (English, বাংলা, हिन्दी, العربية, Español, 中文, Français, Deutsch, 日本語, 한국어, Русский, Türkçe …)"
+      spellcheck="false"
+    >Hello! Welcome to AI Text Reader. This tool can read any text aloud for you in over 40 languages.</textarea>
+
+    <div class="info-bar">
+      <div class="info-stats">
+        <span id="charCount">0 chars</span>
+        <span id="wordCount">0 words</span>
+        <span id="estTime">~0s</span>
+      </div>
+      <span>Detected: <span class="detected-lang" id="detectedLang">—</span></span>
+    </div>
+
+    <div class="text-actions">
+      <button id="btnPaste">📋 Paste</button>
+      <button id="btnCopy">📄 Copy</button>
+      <button id="btnSample" class="btn-sample">🌍 Sample</button>
+      <button id="btnClear" class="btn-clear">🗑️ Clear</button>
+    </div>
+
+    <!-- LANGUAGE FILTER -->
+    <div class="lang-filter-row">
+      <label>🌐 Filter Voices:</label>
+      <select id="langFilter">
+        <option value="all">All Languages</option>
+      </select>
+    </div>
+
+    <div class="controls three-col">
+      <div class="control-group full-width">
+        <label for="voiceSelect">🎤 Voice</label>
+        <select id="voiceSelect">
+          <option value="">Loading voices…</option>
+        </select>
+        <div class="voice-warning" id="voiceWarning"></div>
+        <div class="voice-count" id="voiceCount"></div>
+      </div>
+      <div class="control-group">
+        <label for="speedRange">⚡ Speed</label>
+        <input type="range" id="speedRange" min="0.3" max="3" step="0.1" value="1" />
+        <div class="slider-value" id="speedValue">1.0×</div>
+      </div>
+      <div class="control-group">
+        <label for="pitchRange">🎵 Pitch</label>
+        <input type="range" id="pitchRange" min="0.1" max="2" step="0.1" value="1" />
+        <div class="slider-value" id="pitchValue">1.0</div>
+      </div>
+      <div class="control-group">
+        <label for="volumeRange">🔊 Volume</label>
+        <input type="range" id="volumeRange" min="0" max="1" step="0.1" value="1" />
+        <div class="slider-value" id="volumeValue">100%</div>
+      </div>
+    </div>
+
+    <!-- Waveform -->
+    <div class="waveform" id="waveform"></div>
+
+    <!-- Progress -->
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Playback buttons -->
+    <div class="playback">
+      <button class="btn btn-speak" id="btnSpeak">▶️ Speak</button>
+      <button class="btn btn-pause" id="btnPause" disabled>⏸️ Pause</button>
+      <button class="btn btn-stop"  id="btnStop"  disabled>⏹️ Stop</button>
+    </div>
+
+    <p class="shortcut-hint">
+      <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to Speak &nbsp;|&nbsp; <kbd>Ctrl</kbd> + <kbd>.</kbd> to Stop
+    </p>
+
+    <p class="status" id="status">Ready — press Speak to hear the text.</p>
+
+    <!-- Language Support Toggle -->
+    <button class="toggle-lang-support" id="toggleLangSupport">📊 Show Language Support Status</button>
+    <div class="lang-support-wrapper" id="langSupportWrapper">
+      <div class="lang-support">
+        <h3>🌍 Voice Availability on Your Browser</h3>
+        <div class="lang-grid" id="langGrid"></div>
+      </div>
+    </div>
+
+    <!-- Debug log -->
+    <div class="debug-log" id="debugLog"></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="footer">
+    Built with ❤️ using the <a href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis" target="_blank">Web Speech API</a> &middot; Works 100% in your browser &middot; No data sent to servers.
+  </footer>
+
+  <script>
+    /* ==========================================================
+       ELEMENT REFERENCES
+       ========================================================== */
+    const textInput       = document.getElementById('textInput');
+    const charCount       = document.getElementById('charCount');
+    const wordCount       = document.getElementById('wordCount');
+    const estTime         = document.getElementById('estTime');
+    const detectedLang    = document.getElementById('detectedLang');
+    const voiceSelect     = document.getElementById('voiceSelect');
+    const langFilter      = document.getElementById('langFilter');
+    const speedRange      = document.getElementById('speedRange');
+    const speedValue      = document.getElementById('speedValue');
+    const pitchRange      = document.getElementById('pitchRange');
+    const pitchValue      = document.getElementById('pitchValue');
+    const volumeRange     = document.getElementById('volumeRange');
+    const volumeValue     = document.getElementById('volumeValue');
+    const btnSpeak        = document.getElementById('btnSpeak');
+    const btnPause        = document.getElementById('btnPause');
+    const btnStop         = document.getElementById('btnStop');
+    const btnCopy         = document.getElementById('btnCopy');
+    const btnPaste        = document.getElementById('btnPaste');
+    const btnClear        = document.getElementById('btnClear');
+    const btnSample       = document.getElementById('btnSample');
+    const waveform        = document.getElementById('waveform');
+    const statusEl        = document.getElementById('status');
+    const themeToggle     = document.getElementById('themeToggle');
+    const themeIcon       = document.getElementById('themeIcon');
+    const themeLabel      = document.getElementById('themeLabel');
+    const toastEl         = document.getElementById('toast');
+    const debugLog        = document.getElementById('debugLog');
+    const voiceWarning    = document.getElementById('voiceWarning');
+    const voiceCountEl    = document.getElementById('voiceCount');
+    const langBadge       = document.getElementById('langBadge');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar     = document.getElementById('progressBar');
+    const toggleLangBtn   = document.getElementById('toggleLangSupport');
+    const langSupportWrap = document.getElementById('langSupportWrapper');
+    const langGrid        = document.getElementById('langGrid');
+
+    /* ==========================================================
+       COMPREHENSIVE LANGUAGE DATABASE (40+ Languages)
+       ========================================================== */
+    const LANGUAGES = {
+      'en': { name: 'English',       native: 'English',     script: /[A-Za-z]/g,                    sample: "Hello! Welcome to AI Text Reader. This tool can read any text aloud for you." },
+      'bn': { name: 'Bangla',        native: 'বাংলা',       script: /[\u0980-\u09FF]/g,             sample: "হ্যালো! এআই টেক্সট রিডারে স্বাগতম। এই টুলটি আপনার জন্য যেকোনো টেক্সট জোরে পড়তে পারে।" },
+      'hi': { name: 'Hindi',         native: 'हिन्दी',       script: /[\u0900-\u097F]/g,             sample: "नमस्ते! एआई टेक्स्ट रीडर में आपका स्वागत है। यह टूल आपके लिए किसी भी टेक्स्ट को पढ़ सकता है।" },
+      'ar': { name: 'Arabic',        native: 'العربية',     script: /[\u0600-\u06FF]/g,             sample: "مرحبا! مرحبا بكم في قارئ النصوص بالذكاء الاصطناعي. هذه الأداة يمكنها قراءة أي نص بصوت عالٍ." },
+      'zh': { name: 'Chinese',       native: '中文',         script: /[\u4E00-\u9FFF]/g,             sample: "你好！欢迎使用AI文本阅读器。这个工具可以为你朗读任何文本。" },
+      'ja': { name: 'Japanese',      native: '日本語',       script: /[\u3040-\u309F\u30A0-\u30FF]/g, sample: "こんにちは！AIテキストリーダーへようこそ。このツールは、テキストを読み上げることができます。" },
+      'ko': { name: 'Korean',        native: '한국어',       script: /[\uAC00-\uD7AF]/g,            sample: "안녕하세요! AI 텍스트 리더에 오신 것을 환영합니다. 이 도구는 모든 텍스트를 소리내어 읽어줍니다." },
+      'es': { name: 'Spanish',       native: 'Español',     script: /[áéíóúñ¿¡]/gi,                 sample: "¡Hola! Bienvenido al lector de texto AI. Esta herramienta puede leer cualquier texto en voz alta." },
+      'fr': { name: 'French',        native: 'Français',    script: /[àâçéèêëïîôùûüÿœæ]/gi,        sample: "Bonjour! Bienvenue dans le lecteur de texte AI. Cet outil peut lire n'importe quel texte à haute voix." },
+      'de': { name: 'German',        native: 'Deutsch',     script: /[äöüßÄÖÜ]/g,                  sample: "Hallo! Willkommen beim AI-Textleser. Dieses Tool kann jeden Text laut vorlesen." },
+      'pt': { name: 'Portuguese',    native: 'Português',   script: /[ãõçáàâéêíóôú]/gi,            sample: "Olá! Bem-vindo ao leitor de texto AI. Esta ferramenta pode ler qualquer texto em voz alta." },
+      'ru': { name: 'Russian',       native: 'Русский',     script: /[\u0400-\u04FF]/g,             sample: "Здравствуйте! Добро пожаловать в программу чтения текста AI. Этот инструмент может прочитать любой текст вслух." },
+      'it': { name: 'Italian',       native: 'Italiano',    script: /[àèéìíîòóùú]/gi,              sample: "Ciao! Benvenuto nel lettore di testo AI. Questo strumento può leggere qualsiasi testo ad alta voce." },
+      'tr': { name: 'Turkish',       native: 'Türkçe',      script: /[çğıöşüÇĞİÖŞÜ]/g,            sample: "Merhaba! AI Metin Okuyucusuna hoş geldiniz. Bu araç herhangi bir metni sesli okuyabilir." },
+      'th': { name: 'Thai',          native: 'ไทย',          script: /[\u0E00-\u0E7F]/g,             sample: "สวัสดี! ยินดีต้อนรับสู่โปรแกรมอ่านข้อความ AI เครื่องมือนี้สามารถอ่านข้อความใดๆ ออกเสียงได้" },
+      'vi': { name: 'Vietnamese',    native: 'Tiếng Việt',  script: /[ăâđêôơưàảãáạ]/gi,            sample: "Xin chào! Chào mừng bạn đến với Trình đọc văn bản AI. Công cụ này có thể đọc to bất kỳ văn bản nào." },
+      'ta': { name: 'Tamil',         native: 'தமிழ்',       script: /[\u0B80-\u0BFF]/g,             sample: "வணக்கம்! AI உரை வாசிப்பாளருக்கு வரவேற்கிறோம்." },
+      'te': { name: 'Telugu',        native: 'తెలుగు',      script: /[\u0C00-\u0C7F]/g,             sample: "హలో! AI టెక్స్ట్ రీడర్‌కి స్వాగతం." },
+      'ml': { name: 'Malayalam',     native: 'മലയാളം',      script: /[\u0D00-\u0D7F]/g,             sample: "ഹലോ! AI ടെക്സ്റ്റ് റീഡറിലേക്ക് സ്വാഗതം." },
+      'kn': { name: 'Kannada',       native: 'ಕನ್ನಡ',        script: /[\u0C80-\u0CFF]/g,             sample: "ಹಲೋ! AI ಪಠ್ಯ ಓದುಗಾರನಿಗೆ ಸ್ವಾಗತ." },
+      'gu': { name: 'Gujarati',      native: 'ગુજરાતી',     script: /[\u0A80-\u0AFF]/g,             sample: "હેલો! AI ટેક્સ્ટ રીડરમાં આપનું સ્વાગત છે." },
+      'pa': { name: 'Punjabi',       native: 'ਪੰਜਾਬੀ',       script: /[\u0A00-\u0A7F]/g,             sample: "ਹੈਲੋ! AI ਟੈਕਸਟ ਰੀਡਰ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ." },
+      'mr': { name: 'Marathi',       native: 'मराठी',       script: /[\u0900-\u097F]/g,             sample: "नमस्कार! AI टेक्स्ट रीडरमध्ये आपले स्वागत आहे." },
+      'ur': { name: 'Urdu',          native: 'اردو',         script: /[\u0600-\u06FF\uFB50-\uFDFF]/g, sample: "ہیلو! اے آئی ٹیکسٹ ریڈر میں خوش آمدید۔" },
+      'fa': { name: 'Persian',       native: 'فارسی',       script: /[\u0600-\u06FF\uFB8A-\uFBFF]/g, sample: "سلام! به خواننده متن هوش مصنوعی خوش آمدید." },
+      'nl': { name: 'Dutch',         native: 'Nederlands',  script: /[ëïéè]/gi,                     sample: "Hallo! Welkom bij de AI-tekstlezer. Deze tool kan elke tekst hardop voorlezen." },
+      'pl': { name: 'Polish',        native: 'Polski',      script: /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g,     sample: "Cześć! Witamy w czytniku tekstu AI. To narzędzie może odczytać dowolny tekst na głos." },
+      'uk': { name: 'Ukrainian',     native: 'Українська',  script: /[\u0400-\u04FF]/g,             sample: "Привіт! Ласкаво просимо до програми читання тексту AI." },
+      'el': { name: 'Greek',         native: 'Ελληνικά',    script: /[\u0370-\u03FF]/g,             sample: "Γεια σας! Καλώς ήρθατε στο AI Text Reader." },
+      'he': { name: 'Hebrew',        native: 'עברית',        script: /[\u0590-\u05FF]/g,             sample: "שלום! ברוכים הבאים לקורא הטקסט של AI." },
+      'sv': { name: 'Swedish',       native: 'Svenska',     script: /[åäöÅÄÖ]/g,                   sample: "Hej! Välkommen till AI-textläsaren. Det här verktyget kan läsa upp vilken text som helst." },
+      'da': { name: 'Danish',        native: 'Dansk',       script: /[æøåÆØÅ]/g,                   sample: "Hej! Velkommen til AI-tekstlæseren." },
+      'fi': { name: 'Finnish',       native: 'Suomi',       script: /[äöÄÖ]/g,                     sample: "Hei! Tervetuloa AI-tekstinlukijaan." },
+      'no': { name: 'Norwegian',     native: 'Norsk',       script: /[æøåÆØÅ]/g,                   sample: "Hei! Velkommen til AI-tekstleseren." },
+      'cs': { name: 'Czech',         native: 'Čeština',     script: /[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g, sample: "Ahoj! Vítejte v AI čtečce textu." },
+      'ro': { name: 'Romanian',      native: 'Română',      script: /[ăâîșțĂÂÎȘȚ]/g,              sample: "Bună! Bine ați venit la cititorul de text AI." },
+      'hu': { name: 'Hungarian',     native: 'Magyar',      script: /[áéíóöőúüűÁÉÍÓÖŐÚÜŰ]/g,     sample: "Helló! Üdvözöljük az AI szövegolvasóban." },
+      'id': { name: 'Indonesian',    native: 'Bahasa Indonesia', script: /\b(dan|yang|ini|itu|untuk|dengan)\b/gi, sample: "Halo! Selamat datang di Pembaca Teks AI. Alat ini dapat membacakan teks apa pun dengan suara keras." },
+      'ms': { name: 'Malay',         native: 'Bahasa Melayu', script: /\b(dan|yang|ini|itu|untuk|dengan)\b/gi, sample: "Halo! Selamat datang ke Pembaca Teks AI." },
+      'sw': { name: 'Swahili',       native: 'Kiswahili',   script: /\b(na|ya|wa|ni|kwa)\b/gi,     sample: "Habari! Karibu kwenye Kisomaji cha Maandishi cha AI." },
+      'my': { name: 'Burmese',       native: 'မြန်မာ',       script: /[\u1000-\u109F]/g,             sample: "မင်္ဂလာပါ! AI စာသားဖတ်စက်မှ ကြိုဆိုပါတယ်။" },
+      'km': { name: 'Khmer',         native: 'ខ្មែរ',         script: /[\u1780-\u17FF]/g,             sample: "សួស្តី! សូមស្វាគមន៍មកកាន់ AI Text Reader." },
+      'si': { name: 'Sinhala',       native: 'සිංහල',       script: /[\u0D80-\u0DFF]/g,             sample: "ආයුබෝවන්! AI Text Reader වෙත සාදරයෙන් පිළිගනිමු." },
+      'ne': { name: 'Nepali',        native: 'नेपाली',       script: /[\u0900-\u097F]/g,             sample: "नमस्कार! AI टेक्स्ट रिडरमा स्वागत छ।" },
+      'am': { name: 'Amharic',       native: 'አማርኛ',        script: /[\u1200-\u137F]/g,             sample: "ሰላም! ወደ AI ጽሑፍ አንባቢ እንኳን ደህና መጡ።" },
+      'ka': { name: 'Georgian',      native: 'ქართული',     script: /[\u10A0-\u10FF]/g,             sample: "გამარჯობა! კეთილი იყოს თქვენი მობრძანება AI ტექსტის მკითხველში." },
+      'hy': { name: 'Armenian',      native: 'Հայերեն',     script: /[\u0530-\u058F]/g,             sample: "Բարև! Բարի գալուստ AI Text Reader:" },
+    };
+
+    /* ==========================================================
+       MULTI-LANGUAGE SAMPLE TEXTS (rotating)
+       ========================================================== */
+    let sampleIndex = 0;
+    const sampleKeys = Object.keys(LANGUAGES);
+
+    /* ==========================================================
+       DEBUG LOGGER
+       ========================================================== */
+    let debugClickCount = 0;
+    statusEl.addEventListener('click', () => {
+      debugClickCount++;
+      if (debugClickCount >= 3) {
+        debugLog.classList.toggle('visible');
+        debugClickCount = 0;
+      }
+    });
+
+    function log(msg) {
+      console.log('[AITextReader]', msg);
+      const time = new Date().toLocaleTimeString();
+      debugLog.innerHTML += `<div>[${time}] ${msg}</div>`;
+      debugLog.scrollTop = debugLog.scrollHeight;
+    }
+
+    /* ==========================================================
+       CHECK BROWSER SUPPORT
+       ========================================================== */
+    const synth = window.speechSynthesis;
+
+    if (!synth) {
+      statusEl.textContent = '❌ Your browser does not support Speech Synthesis!';
+      statusEl.classList.add('error');
+      btnSpeak.disabled = true;
+      log('ERROR: speechSynthesis not available');
+    } else {
+      log('speechSynthesis API is available');
+    }
+
+    /* ==========================================================
+       GENERATE WAVEFORM BARS
+       ========================================================== */
+    for (let i = 0; i < 45; i++) {
+      const bar = document.createElement('div');
+      bar.classList.add('bar');
+      bar.style.animationDelay = `${(i * 0.055).toFixed(3)}s`;
+      waveform.appendChild(bar);
+    }
+
+    /* ==========================================================
+       LANGUAGE DETECTION — Now supports 40+ languages!
+       ========================================================== */
+    function detectLanguage(text) {
+      if (!text.trim()) return { name: '—', code: 'en' };
+
+      let best = null;
+      let maxScore = 0;
+
+      // For script-based languages, count matching characters
+      for (const [code, lang] of Object.entries(LANGUAGES)) {
+        // Skip languages that use Latin script detection (they need special handling)
+        if (['id', 'ms', 'sw'].includes(code)) continue;
+        if (['es','fr','de','pt','it','nl','pl','sv','da','fi','no','cs','ro','hu','tr','vi'].includes(code)) {
+          // For Latin-script languages with diacritics, count special chars
+          const matches = text.match(lang.script);
+          if (matches && matches.length > maxScore) {
+            maxScore = matches.length;
+            best = { name: lang.name, native: lang.native, code };
+          }
+        } else {
+          const matches = text.match(lang.script);
+          if (matches && matches.length > maxScore) {
+            maxScore = matches.length;
+            best = { name: lang.name, native: lang.native, code };
+          }
+        }
+      }
+
+      // Check word-based patterns for Indonesian/Malay/Swahili
+      if (!best || best.code === 'en') {
+        for (const code of ['id', 'ms', 'sw']) {
+          const matches = text.match(LANGUAGES[code].script);
+          if (matches && matches.length >= 3) {
+            best = { name: LANGUAGES[code].name, native: LANGUAGES[code].native, code };
+            break;
+          }
+        }
+      }
+
+      // Handle Marathi vs Hindi (both Devanagari) — check for unique Marathi words
+      if (best && best.code === 'hi') {
+        const marathiWords = /\b(आहे|आणि|करणे|म्हणजे|मध्ये)\b/g;
+        if (text.match(marathiWords)) {
+          best = { name: 'Marathi', native: 'मराठी', code: 'mr' };
+        }
+        const nepaliWords = /\b(छ|गर्नु|हुन्छ|नेपाल)\b/g;
+        if (text.match(nepaliWords)) {
+          best = { name: 'Nepali', native: 'नेपाली', code: 'ne' };
+        }
+      }
+
+      // Handle Urdu vs Arabic (overlapping script)
+      if (best && best.code === 'ar') {
+        const urduChars = /[\u0679\u067E\u0686\u0688\u0691\u0698\u06A9\u06AF\u06BA\u06BE\u06C1\u06CC\u06D2]/g;
+        const urduMatches = text.match(urduChars);
+        if (urduMatches && urduMatches.length >= 2) {
+          best = { name: 'Urdu', native: 'اردو', code: 'ur' };
+        }
+        // Persian detection
+        const persianChars = /[\u067E\u0686\u0698\u06AF\u06CC]/g;
+        const persianWords = /\b(است|این|آن|برای|خوش)\b/g;
+        if (text.match(persianWords)) {
+          best = { name: 'Persian', native: 'فارسی', code: 'fa' };
+        }
+      }
+
+      // Handle Ukrainian vs Russian
+      if (best && best.code === 'ru') {
+        const ukrainianChars = /[іїєґІЇЄҐ]/g;
+        if (text.match(ukrainianChars)) {
+          best = { name: 'Ukrainian', native: 'Українська', code: 'uk' };
+        }
+      }
+
+      // Default to English if nothing matched
+      if (!best || maxScore === 0) {
+        // Check if text has Latin characters
+        if (/[A-Za-z]/.test(text)) {
+          best = { name: 'English', native: 'English', code: 'en' };
+        } else {
+          best = { name: 'Unknown', native: 'Unknown', code: 'en' };
+        }
+      }
+
+      return best;
+    }
+
+    /* ==========================================================
+       VOICE LOADING — Enhanced with language grouping
+       ========================================================== */
+    let voices = [];
+    let voicesLoaded = false;
+    let voicesByLang = {};
+
+    function getLanguageFamily(langCode) {
+      const code = langCode.toLowerCase().split('-')[0].split('_')[0];
+      for (const [key, lang] of Object.entries(LANGUAGES)) {
+        if (code === key) return { code: key, name: lang.name, native: lang.native };
+      }
+      // Return generic if not in our database
+      return { code, name: langCode, native: langCode };
+    }
+
+    function loadVoices() {
+      voices = synth.getVoices();
+      log(`getVoices() returned ${voices.length} voices`);
+
+      if (voices.length === 0) {
+        log('No voices yet — will retry...');
+        return false;
+      }
+
+      voicesLoaded = true;
+
+      // Group voices by language family
+      voicesByLang = {};
+      voices.forEach((v, i) => {
+        const family = getLanguageFamily(v.lang);
+        if (!voicesByLang[family.code]) {
+          voicesByLang[family.code] = { name: family.name, native: family.native, voices: [] };
+        }
+        voicesByLang[family.code].voices.push({ voice: v, index: i });
+      });
+
+      // Populate language filter
+      populateLangFilter();
+
+      // Populate voice select
+      populateVoiceSelect('all');
+
+      // Update language support grid
+      updateLangSupportGrid();
+
+      // Update badge count
+      langBadge.textContent = `🌍 ${Object.keys(voicesByLang).length} Languages`;
+
+      log(`Voices organized into ${Object.keys(voicesByLang).length} language groups`);
+
+      return true;
+    }
+
+    function populateLangFilter() {
+      langFilter.innerHTML = '<option value="all">🌐 All Languages (' + voices.length + ' voices)</option>';
+      langFilter.innerHTML += '<option value="auto">🔍 Auto (match detected language)</option>';
+
+      // Sort language groups alphabetically
+      const sortedLangs = Object.entries(voicesByLang).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+      for (const [code, group] of sortedLangs) {
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = `${group.native} — ${group.name} (${group.voices.length})`;
+        langFilter.appendChild(opt);
+      }
+    }
+
+    function populateVoiceSelect(filterLang) {
+      voiceSelect.innerHTML = '';
+
+      if (filterLang === 'all') {
+        // Group by language with optgroups
+        const sortedLangs = Object.entries(voicesByLang).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+        for (const [code, group] of sortedLangs) {
+          const optgroup = document.createElement('optgroup');
+          optgroup.label = `${group.native} — ${group.name}`;
+
+          for (const item of group.voices) {
+            const opt = document.createElement('option');
+            opt.value = item.index;
+            const type = item.voice.localService ? '🔹' : '🌐';
+            opt.textContent = `${type} ${item.voice.name}`;
+            optgroup.appendChild(opt);
+          }
+          voiceSelect.appendChild(optgroup);
+        }
+      } else {
+        // Filter by specific language
+        const group = voicesByLang[filterLang];
+        if (group) {
+          for (const item of group.voices) {
+            const opt = document.createElement('option');
+            opt.value = item.index;
+            const type = item.voice.localService ? '🔹 Local' : '🌐 Online';
+            opt.textContent = `${type}: ${item.voice.name} (${item.voice.lang})`;
+            voiceSelect.appendChild(opt);
+          }
+          voiceCountEl.textContent = `${group.voices.length} voice(s) available for ${group.name}`;
+        } else {
+          voiceSelect.innerHTML = '<option value="">No voices for this language</option>';
+          voiceCountEl.textContent = 'No voices found for this language on your browser';
+        }
+      }
+
+      // Select a good default
+      selectBestVoice(filterLang);
+    }
+
+    function selectBestVice(langCode) {
+      // This is called selectBestVoice below
+    }
+
+    function selectBestVoice(langCode) {
+      if (langCode === 'all') langCode = 'en';
+
+      // Try to find a Google voice first (usually best quality)
+      let bestIdx = -1;
+
+      if (voicesByLang[langCode]) {
+        const langVoices = voicesByLang[langCode].voices;
+        // Prefer Google voices
+        let found = langVoices.find(v => v.voice.name.toLowerCase().includes('google'));
+        if (!found) found = langVoices.find(v => !v.voice.localService); // online voices
+        if (!found) found = langVoices[0]; // any voice
+        if (found) bestIdx = found.index;
+      }
+
+      // Fallback to any English voice
+      if (bestIdx === -1 && voicesByLang['en']) {
+        let found = voicesByLang['en'].voices.find(v => v.voice.name.toLowerCase().includes('google'));
+        if (!found) found = voicesByLang['en'].voices[0];
+        if (found) bestIdx = found.index;
+      }
+
+      if (bestIdx === -1 && voices.length > 0) bestIdx = 0;
+
+      if (bestIdx !== -1) {
+        voiceSelect.value = bestIdx;
+        log(`Selected voice: ${voices[bestIdx].name} (${voices[bestIdx].lang})`);
+      }
+    }
+
+    function autoSelectVoiceForLang(langCode) {
+      if (!voicesLoaded) return;
+
+      if (voicesByLang[langCode]) {
+        const langVoices = voicesByLang[langCode].voices;
+        let best = langVoices.find(v => v.voice.name.toLowerCase().includes('google'));
+        if (!best) best = langVoices.find(v => !v.voice.localService);
+        if (!best) best = langVoices[0];
+
+        if (best) {
+          voiceSelect.value = best.index;
+          voiceWarning.textContent = '';
+          voiceWarning.style.color = 'var(--success)';
+          voiceWarning.textContent = `✓ ${voicesByLang[langCode].name} voice auto-selected`;
+          setTimeout(() => { voiceWarning.textContent = ''; }, 3000);
+          return true;
+        }
+      }
+
+      // No voice found for this language
+      voiceWarning.style.color = 'var(--warning)';
+      voiceWarning.textContent = `⚠️ No ${LANGUAGES[langCode]?.name || langCode} voice found. Using current voice.`;
+      return false;
+    }
+
+    /* ==========================================================
+       LANGUAGE SUPPORT GRID
+       ========================================================== */
+    function updateLangSupportGrid() {
+      langGrid.innerHTML = '';
+
+      for (const [code, lang] of Object.entries(LANGUAGES)) {
+        const hasVoice = !!voicesByLang[code];
+        const chip = document.createElement('div');
+        chip.className = `lang-chip ${hasVoice ? 'available' : 'unavailable'}`;
+        chip.innerHTML = `<span class="dot"></span>${lang.native}`;
+        chip.title = hasVoice
+          ? `${lang.name}: ${voicesByLang[code].voices.length} voice(s) available`
+          : `${lang.name}: No voice available on this browser`;
+        langGrid.appendChild(chip);
+      }
+    }
+
+    toggleLangBtn.addEventListener('click', () => {
+      langSupportWrap.classList.toggle('open');
+      toggleLangBtn.textContent = langSupportWrap.classList.contains('open')
+        ? '📊 Hide Language Support Status'
+        : '📊 Show Language Support Status';
+    });
+
+    /* ==========================================================
+       VOICE LOADING — Event listeners & retries
+       ========================================================== */
+    if (synth) {
+      synth.onvoiceschanged = () => {
+        log('onvoiceschanged fired');
+        loadVoices();
+      };
+      loadVoices();
+    }
+
+    let voiceRetryCount = 0;
+    const voiceRetryInterval = setInterval(() => {
+      if (voicesLoaded || voiceRetryCount > 30) {
+        clearInterval(voiceRetryInterval);
+        if (!voicesLoaded) {
+          log('WARNING: Could not load voices after retries');
+          statusEl.textContent = '⚠️ No voices found. Try refreshing or use Chrome/Edge.';
+          statusEl.className = 'status error';
+        }
+        return;
+      }
+      voiceRetryCount++;
+      log(`Retry #${voiceRetryCount} to load voices...`);
+      loadVoices();
+    }, 300);
+
+    /* ==========================================================
+       LANGUAGE FILTER CHANGE
+       ========================================================== */
+    langFilter.addEventListener('change', () => {
+      const val = langFilter.value;
+      if (val === 'auto') {
+        const detected = detectLanguage(textInput.value);
+        populateVoiceSelect(detected.code);
+      } else {
+        populateVoiceSelect(val);
+      }
+    });
+
+    /* ==========================================================
+       TEXTAREA EVENTS
+       ========================================================== */
+    function updateTextInfo() {
+      const text = textInput.value;
+      const chars = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const speed = parseFloat(speedRange.value) || 1;
+      const seconds = Math.round((words / 150) * 60 / speed); // ~150 words per minute
+
+      charCount.textContent = `${chars} chars`;
+      wordCount.textContent = `${words} words`;
+      estTime.textContent = `~${seconds}s`;
+
+      const detected = detectLanguage(text);
+      detectedLang.textContent = detected.name !== '—'
+        ? `${LANGUAGES[detected.code]?.native || detected.name}`
+        : '—';
+
+      // Auto-select voice if language filter is set to auto
+      if (langFilter.value === 'auto' && detected.code && detected.name !== '—') {
+        autoSelectVoiceForLang(detected.code);
+      }
+    }
+
+    textInput.addEventListener('input', updateTextInfo);
+    speedRange.addEventListener('input', () => {
+      speedValue.textContent = `${parseFloat(speedRange.value).toFixed(1)}×`;
+      updateTextInfo(); // update estimated time
+    });
+
+    pitchRange.addEventListener('input', () => {
+      pitchValue.textContent = parseFloat(pitchRange.value).toFixed(1);
+    });
+
+    volumeRange.addEventListener('input', () => {
+      volumeValue.textContent = `${Math.round(parseFloat(volumeRange.value) * 100)}%`;
+    });
+
+    // Initialize
+    updateTextInfo();
+
+    /* ==========================================================
+       SPEAK FUNCTION — Enhanced with chunking for long text
+       ========================================================== */
+    let currentUtterance = null;
+    let isSpeaking = false;
+    let speechChunks = [];
+    let currentChunkIndex = 0;
+    let totalChunks = 0;
+
+    function splitTextIntoChunks(text, maxLen = 200) {
+      // Split by sentences first, then by maxLen if needed
+      const sentences = text.match(/[^.!?।。！？\n]+[.!?।。！？\n]?/g) || [text];
+      const chunks = [];
+      let current = '';
+
+      for (const sentence of sentences) {
+        if ((current + sentence).length > maxLen && current.length > 0) {
+          chunks.push(current.trim());
+          current = sentence;
+        } else {
+          current += sentence;
+        }
+      }
+      if (current.trim()) chunks.push(current.trim());
+
+      return chunks.length > 0 ? chunks : [text];
+    }
+
+    function speak() {
+      const text = textInput.value.trim();
+
+      if (!text) {
+        showToast('⚠️ Please enter some text first!');
+        return;
+      }
+
+      if (!synth) {
+        showToast('❌ Speech not supported in this browser!');
+        return;
+      }
+
+      log(`Speaking: "${text.substring(0, 60)}..."`);
+
+      // Cancel any current speech
+      synth.cancel();
+
+      // Split into chunks to avoid Chrome's 15-second cutoff
+      speechChunks = splitTextIntoChunks(text);
+      totalChunks = speechChunks.length;
+      currentChunkIndex = 0;
+
+      log(`Split into ${totalChunks} chunks`);
+
+      setTimeout(() => speakNextChunk(), 100);
+    }
+
+    function speakNextChunk() {
+      if (currentChunkIndex >= speechChunks.length) {
+        log('All chunks spoken');
+        resetUI();
+        return;
+      }
+
+      const chunkText = speechChunks[currentChunkIndex];
+      log(`Speaking chunk ${currentChunkIndex + 1}/${totalChunks}: "${chunkText.substring(0, 40)}..."`);
+
+      try {
+        currentUtterance = new SpeechSynthesisUtterance(chunkText);
+        currentUtterance.rate   = parseFloat(speedRange.value);
+        currentUtterance.pitch  = parseFloat(pitchRange.value);
+        currentUtterance.volume = parseFloat(volumeRange.value);
+
+        // Set voice
+        const selectedIndex = parseInt(voiceSelect.value, 10);
+        if (!isNaN(selectedIndex) && voices[selectedIndex]) {
+          currentUtterance.voice = voices[selectedIndex];
+          currentUtterance.lang  = voices[selectedIndex].lang;
+          if (currentChunkIndex === 0) {
+            log(`Voice: ${voices[selectedIndex].name} (${voices[selectedIndex].lang})`);
+          }
+        } else {
+          const detected = detectLanguage(textInput.value);
+          currentUtterance.lang = detected.code || 'en-US';
+          log(`No voice selected, using lang: ${currentUtterance.lang}`);
+        }
+
+        currentUtterance.onstart = () => {
+          if (currentChunkIndex === 0) {
+            log('✅ Speech STARTED');
+            isSpeaking = true;
+            waveform.classList.add('active');
+            progressContainer.classList.add('active');
+            btnPause.disabled = false;
+            btnStop.disabled  = false;
+            btnSpeak.disabled = true;
+            btnSpeak.innerHTML = '🔊 Speaking...';
+            statusEl.textContent = '🔊 Speaking…';
+            statusEl.className = 'status speaking';
+          }
+          // Update progress
+          const progress = ((currentChunkIndex + 1) / totalChunks) * 100;
+          progressBar.style.width = `${progress}%`;
+        };
+
+        currentUtterance.onend = () => {
+          currentChunkIndex++;
+          if (currentChunkIndex < speechChunks.length) {
+            speakNextChunk();
+          } else {
+            log('✅ All speech ENDED');
+            progressBar.style.width = '100%';
+            setTimeout(() => resetUI(), 300);
+          }
+        };
+
+        currentUtterance.onerror = (e) => {
+          if (e.error === 'interrupted') {
+            log('Speech interrupted (likely user stopped)');
+          } else {
+            log(`❌ Speech ERROR: ${e.error}`);
+            showToast(`❌ Error: ${e.error}`);
+          }
+          resetUI();
+        };
+
+        currentUtterance.onpause = () => {
+          statusEl.textContent = '⏸️ Paused';
+          statusEl.className = 'status warning';
+          waveform.classList.remove('active');
+        };
+
+        currentUtterance.onresume = () => {
+          statusEl.textContent = '🔊 Speaking…';
+          statusEl.className = 'status speaking';
+          waveform.classList.add('active');
+        };
+
+        synth.speak(currentUtterance);
+
+        // Fallback check for first chunk
+        if (currentChunkIndex === 0) {
+          setTimeout(() => {
+            if (!isSpeaking && !synth.speaking) {
+              log('WARNING: Speech did not start');
+              statusEl.textContent = '⚠️ Speech failed. Try a different voice or refresh.';
+              statusEl.className = 'status error';
+              resetUI();
+            }
+          }, 2000);
+        }
+
+      } catch (err) {
+        log(`EXCEPTION: ${err.message}`);
+        showToast(`❌ Error: ${err.message}`);
+        resetUI();
+      }
+    }
+
+    /* ==========================================================
+       BUTTON EVENT LISTENERS
+       ========================================================== */
+    btnSpeak.addEventListener('click', speak);
+
+    btnPause.addEventListener('click', () => {
+      if (!synth) return;
+      if (synth.speaking && !synth.paused) {
+        synth.pause();
+        btnPause.innerHTML = '▶️ Resume';
+      } else if (synth.paused) {
+        synth.resume();
+        btnPause.innerHTML = '⏸️ Pause';
+      }
+    });
+
+    btnStop.addEventListener('click', () => {
+      if (!synth) return;
+      log('User stopped');
+      speechChunks = [];
+      currentChunkIndex = 0;
+      synth.cancel();
+      resetUI();
+    });
+
+    /* ==========================================================
+       KEYBOARD SHORTCUTS
+       ========================================================== */
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        if (!btnSpeak.disabled) speak();
+      }
+      if (e.ctrlKey && e.key === '.') {
+        e.preventDefault();
+        if (!btnStop.disabled) {
+          speechChunks = [];
+          synth.cancel();
+          resetUI();
+        }
+      }
+    });
+
+    /* ==========================================================
+       RESET UI
+       ========================================================== */
+    function resetUI() {
+      isSpeaking = false;
+      waveform.classList.remove('active');
+      progressContainer.classList.remove('active');
+      progressBar.style.width = '0%';
+      btnPause.disabled    = true;
+      btnStop.disabled     = true;
+      btnSpeak.disabled    = false;
+      btnSpeak.innerHTML   = '▶️ Speak';
+      btnPause.innerHTML   = '⏸️ Pause';
+      statusEl.textContent = 'Ready — press Speak to hear the text.';
+      statusEl.className   = 'status';
+    }
+
+    /* ==========================================================
+       TEXT ACTION BUTTONS
+       ========================================================== */
+    btnCopy.addEventListener('click', () => {
+      if (!textInput.value) { showToast('Nothing to copy!'); return; }
+      navigator.clipboard.writeText(textInput.value)
+        .then(() => showToast('✅ Copied to clipboard!'))
+        .catch(() => {
+          textInput.select();
+          document.execCommand('copy');
+          showToast('✅ Copied!');
+        });
+    });
+
+    btnPaste.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        textInput.value = text;
+        updateTextInfo();
+        showToast('📋 Pasted from clipboard!');
+      } catch {
+        showToast('⚠️ Paste not allowed. Use Ctrl+V instead.');
+      }
+    });
+
+    btnClear.addEventListener('click', () => {
+      if (synth) synth.cancel();
+      speechChunks = [];
+      textInput.value = '';
+      updateTextInfo();
+      resetUI();
+      showToast('🗑️ Text cleared');
+    });
+
+    // Sample text button — cycles through languages
+    btnSample.addEventListener('click', () => {
+      const keys = Object.keys(LANGUAGES);
+      const lang = LANGUAGES[keys[sampleIndex % keys.length]];
+      textInput.value = lang.sample;
+      sampleIndex++;
+      updateTextInfo();
+      showToast(`🌍 Sample: ${lang.native} (${lang.name})`);
+    });
+
+    /* ==========================================================
+       THEME TOGGLE
+       ========================================================== */
+    // Load saved theme
+    const savedTheme = localStorage.getItem('ai-reader-theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      themeIcon.textContent  = savedTheme === 'dark' ? '🌙' : '☀️';
+      themeLabel.textContent = savedTheme === 'dark' ? 'Dark' : 'Light';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      themeIcon.textContent  = isDark ? '☀️' : '🌙';
+      themeLabel.textContent = isDark ? 'Light' : 'Dark';
+      localStorage.setItem('ai-reader-theme', newTheme);
+    });
+
+    /* ==========================================================
+       TOAST
+       ========================================================== */
+    let toastTimer;
+    function showToast(msg) {
+      clearTimeout(toastTimer);
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2800);
+    }
+
+    /* ==========================================================
+       CHROME LONG-TEXT BUG FIX
+       ========================================================== */
+    setInterval(() => {
+      if (synth && synth.speaking && !synth.paused) {
+        synth.resume();
+      }
+    }, 8000);
+
+    /* ==========================================================
+       INITIAL LOG
+       ========================================================== */
+    log(`Browser: ${navigator.userAgent.substring(0, 100)}`);
+    log(`Defined ${Object.keys(LANGUAGES).length} languages`);
+    log('Page loaded. Waiting for voices...');
+  </script>
+</body>
+</html>
